@@ -4,9 +4,6 @@ using UnityEngine;
 
 public class CloseApplication : MonoBehaviour {
 
-     
-
-
 	// Update is called once per frame
 	public void CloseWindow() {
 		

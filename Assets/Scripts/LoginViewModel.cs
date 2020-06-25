@@ -1,4 +1,5 @@
 ﻿using Assets.Scripts.Api;
+using System;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,16 +10,26 @@ public class LoginViewModel : MonoBehaviour
     public InputField UserName;
     public InputField Password;
     public Button logginButton;
+    public GameObject logginScreen;
     private IAPIHelper _apiHelper;
-    //private IEventAggregator _events;
+    public static event Action LoggedIn = delegate { };
+
+    public string ErrorMessage { get; set; }
 
 
     // Start is called before the first frame update
     void Start()
     {
-        logginButton.onClick.AddListener(() => {
+        LoggedIn += PrintTestForLogin;
+        logginButton.onClick.AddListener(() =>
+        {
             LogIn();
         });
+    }
+
+    private void OnDestroy()
+    {
+        LoggedIn -= PrintTestForLogin;
     }
 
     [Inject]
@@ -32,17 +43,18 @@ public class LoginViewModel : MonoBehaviour
     public async Task LogIn()
     {
         try
-         {
+        {
             string un = UserName.text;
             string pw = Password.text;
             ErrorMessage = "";
-            var result = await _apiHelper.Authenticate(un, pw );
+            var result = await _apiHelper.Authenticate(un, pw);
             Debug.Log("User Authenticated" + result);
             await _apiHelper.GetLoggedInUserInfo(result.Access_Token);
             //_events.GetEvent<LogOnEvent>().Publish();
+            LoggedIn?.Invoke();
 
         }
-        catch (System.Exception ex)
+        catch (Exception ex)
         {
 
             Debug.Log(ex);
@@ -50,13 +62,20 @@ public class LoginViewModel : MonoBehaviour
 
     }
 
-    private string  _errorMessage;
+    //private void test()
+    //{
+    //    LoggedIn?.Invoke();
 
-    public string  ErrorMessage
+    //}
+
+    private void PrintTestForLogin()
     {
-        get { return _errorMessage; }
-        set { _errorMessage = value; }
+        Debug.Log("Success in login view model");
+        logginScreen.SetActive(false);
+
     }
+
+
 
 
 }
